@@ -91,7 +91,23 @@ enable_language(ASM)
 
 # Tests 
 if (UNIT_TESTS) 
-    find_package(GTest REQUIRED)
+    set(googletest_SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/googletest-src)
+    set(googletest_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/googletest-build)
+
+    include(FetchContent)
+    FetchContent_Declare(
+            googletest
+            GIT_REPOSITORY    https://github.com/google/googletest.git
+            GIT_TAG           main 
+            SOURCE_DIR        "${googletest_SOURCE_DIR}"
+            BINARY_DIR        "${googletest_SOURCE_DIR}"
+    )
+
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+    set(BUILD_GMOCK OFF CACHE BOOL "" FORCE)
+    set(BUILD_GTEST OFF CACHE BOOL "" FORCE)
+
+    FetchContent_MakeAvailable(googletest)
     include_directories(${GTEST_INCLUDE_DIR})
 
     # Concurrency tests 
