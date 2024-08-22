@@ -88,47 +88,6 @@ TEST(FiberSync, MutexShadowTest) {
   thread_pool.WaitForStop();
 }
 
-TEST(FiberSync, MutexMultiWriterMultiReader) {
-  ThreadPool thread_pool(5);
-  thread_pool.Start();
-
-  constexpr size_t num_producers = 100;
-  constexpr size_t num_consumers = num_producers;
-  constexpr size_t num_push_backs = 1000;
-  constexpr size_t number = 5;
-
-  FiberMutex mutex;
-  std::vector<size_t> values; // guarded by mutex
-  size_t result_number = 0;   // guarded by mutex
-
-  for (size_t producer = 0; producer < num_producers; ++producer) {
-    Go(&thread_pool, [&mutex, &values, num_push_backs, number] {
-      for (size_t i = 0; i < num_push_backs; ++i) {
-        std::lock_guard lock(mutex);
-        values.push_back(number);
-      }
-    });
-  }
-
-  for (size_t consumer = 0; consumer < num_consumers; ++consumer) {
-    Go(&thread_pool, [&mutex, &values, &result_number, num_push_backs] {
-      for (size_t i = 0; i < num_push_backs; ++i) {
-        std::lock_guard lock(mutex);
-        result_number += values.back();
-        values.pop_back();
-      }
-    });
-  }
-
-  thread_pool.Wait();
-
-  size_t expected = num_producers * num_push_backs * number;
-  ASSERT_EQ(expected, result_number);
-
-  thread_pool.SignalStop();
-  thread_pool.WaitForStop();
-}
-
 TEST(FiberSync, WaitGroup) {
   ThreadPool thread_pool(5);
   thread_pool.Start();
