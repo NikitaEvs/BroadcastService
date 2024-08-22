@@ -16,38 +16,38 @@ cp -r build build-old
 # Debug / SanitizersOff
 rm -rf build/
 echo "Run Debug/SanitizersOff"
-/usr/bin/cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=Debug -DASAN:STRING=OFF -DTSAN:STRING=ON -DUNIT_TESTS:STRING=ON -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -Bbuild -G Ninja
-/usr/bin/cmake --build build --config Debug --target all "-j 10" --
+cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=Debug -DASAN:STRING=OFF -DTSAN:STRING=ON -DUNIT_TESTS:STRING=ON -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -Bbuild -G Ninja
+cmake --build build --config Debug --target all "-j 10" --
 run_all_tests
 # Debug / ASAN 
 rm -rf build/
 echo "Run Debug/ASAN"
-/usr/bin/cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=Debug -DASAN:STRING=ON -DTSAN:STRING=OFF -DUNIT_TESTS:STRING=ON -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -Bbuild -G Ninja
-/usr/bin/cmake --build build --config Debug --target all "-j 10" --
+cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=Debug -DASAN:STRING=ON -DTSAN:STRING=OFF -DUNIT_TESTS:STRING=ON -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -Bbuild -G Ninja
+cmake --build build --config Debug --target all "-j 10" --
 run_all_tests
 # Debug / TSAN
 rm -rf build/
 echo "Run Debug/TSAN"
-/usr/bin/cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=Debug -DASAN:STRING=OFF -DTSAN:STRING=ON -DUNIT_TESTS:STRING=ON -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -Bbuild -G Ninja
-/usr/bin/cmake --build build --config Debug --target all "-j 10" --
+cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=Debug -DASAN:STRING=OFF -DTSAN:STRING=ON -DUNIT_TESTS:STRING=ON -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -Bbuild -G Ninja
+cmake --build build --config Debug --target all "-j 10" --
 run_all_tests
 # Release / SanitizersOff
 rm -rf build/
 echo "Run Release/SanitizersOff"
-/usr/bin/cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=Release -DASAN:STRING=OFF -DTSAN:STRING=ON -DUNIT_TESTS:STRING=ON -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -Bbuild -G Ninja
-/usr/bin/cmake --build build --config Release --target all "-j 10" --
+cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=Release -DASAN:STRING=OFF -DTSAN:STRING=ON -DUNIT_TESTS:STRING=ON -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -Bbuild -G Ninja
+cmake --build build --config Release --target all "-j 10" --
 run_all_tests
 # Release / ASAN 
 rm -rf build/
 echo "Run Release/ASAN"
-/usr/bin/cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=Release -DASAN:STRING=ON -DTSAN:STRING=OFF -DUNIT_TESTS:STRING=ON -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -Bbuild -G Ninja
-/usr/bin/cmake --build build --config Release --target all "-j 10" --
+cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=Release -DASAN:STRING=ON -DTSAN:STRING=OFF -DUNIT_TESTS:STRING=ON -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -Bbuild -G Ninja
+cmake --build build --config Release --target all "-j 10" --
 run_all_tests
 # Release / TSAN
 rm -rf build/
 echo "Run Release/TSAN"
-/usr/bin/cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=Release -DASAN:STRING=OFF -DTSAN:STRING=ON -DUNIT_TESTS:STRING=ON -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -Bbuild -G Ninja
-/usr/bin/cmake --build build --config Release --target all "-j 10" --
+cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=Release -DASAN:STRING=OFF -DTSAN:STRING=ON -DUNIT_TESTS:STRING=ON -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -Bbuild -G Ninja
+cmake --build build --config Release --target all "-j 10" --
 run_all_tests
 
 echo "Run complete"
