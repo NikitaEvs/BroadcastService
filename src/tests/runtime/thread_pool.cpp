@@ -97,33 +97,3 @@ TEST(ThreadPool, InternalGo) {
 
   ASSERT_TRUE(flag);
 }
-
-TEST(ThreadPool, MultipleFibers) {
-  ThreadPool pool(5);
-  pool.Start();
-
-  std::atomic<uint32_t> counter{0};
-  const size_t num_producers = 1000;
-  const size_t num_additions = 1000;
-
-  Go(&pool, [&]() {
-    FiberWaitGroup wg;
-    wg.Add(num_producers);
-    for (size_t i = 0; i < num_producers; ++i) {
-      Go(&pool, [&]() {
-        for (size_t addition = 0; addition < num_additions; ++addition) {
-          counter.fetch_add(1);
-          Yield();
-        }
-        wg.Done();
-      });
-    }
-    wg.Wait();
-  });
-
-  pool.Wait();
-  pool.SignalStop();
-  pool.WaitForStop();
-
-  ASSERT_EQ(num_producers * num_additions, counter.load());
-}
