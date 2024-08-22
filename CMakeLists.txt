@@ -91,6 +91,10 @@ enable_language(ASM)
 
 # Tests 
 if (UNIT_TESTS) 
+    get_directory_property(old_dir_compile_options COMPILE_OPTIONS)
+    # Supress all warnings in gtest sources
+    add_compile_options(-w)
+
     set(googletest_SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/googletest-src)
     set(googletest_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/googletest-build)
 
@@ -108,7 +112,10 @@ if (UNIT_TESTS)
     set(BUILD_GTEST OFF CACHE BOOL "" FORCE)
 
     FetchContent_MakeAvailable(googletest)
-    include_directories(${GTEST_INCLUDE_DIR})
+    include_directories(SYSTEM ${GTEST_INCLUDE_DIR})
+
+    # Restore previous compilation flags
+    set_directory_properties(PROPERTIES COMPILE_OPTIONS "${old_dir_compile_options}")
 
     # Concurrency tests 
 
