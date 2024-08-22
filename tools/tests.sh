@@ -11,8 +11,6 @@ run_all_tests() {
 
 cd ..
 
-cp -r build build-old
-
 # Debug / SanitizersOff
 rm -rf build/
 echo "Run Debug/SanitizersOff"
@@ -53,4 +51,3 @@ run_all_tests
 echo "Run complete"
 
 rm -rf build/
-mv build-old build
