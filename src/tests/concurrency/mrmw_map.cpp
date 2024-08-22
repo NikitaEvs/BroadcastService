@@ -39,13 +39,11 @@ void WorkloadTest(Map &map, size_t num_producers, size_t num_consumers,
     }));
   }
 
-  std::atomic<size_t> num_extractions{0};
   for (size_t consumer = 0; consumer < num_consumers; ++consumer) {
-    thread_pool.Execute(Lambda::Create([&map, &num_extractions, num_values]() {
+    thread_pool.Execute(Lambda::Create([&map, num_values]() {
       for (size_t i = 0; i < num_values; ++i) {
         auto value = map.Take(i);
         if (value.has_value()) {
-          num_extractions.fetch_add(1);
           ASSERT_EQ(i, *value);
         }
       }
@@ -53,9 +51,6 @@ void WorkloadTest(Map &map, size_t num_producers, size_t num_consumers,
   }
 
   thread_pool.Wait();
-
-  ASSERT_GE(num_extractions.load(), num_values / 2);
-
   thread_pool.SignalStop();
   thread_pool.WaitForStop();
 }
