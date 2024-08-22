@@ -1,0 +1,47 @@
+buildType:
+  default: debug
+  choices:
+    debug:
+      short: Debug
+      long: Emit debug information
+      buildType: Debug
+    release:
+      short: Release
+      long: Optimize generated code
+      buildType: Release
+ 
+sanitizers:
+  default: off
+  choices:
+    off:
+      short: SanitizersOff
+      long: Instrumentation disabled
+      settings:
+        ASAN: OFF
+        TSAN: OFF
+    asan:
+      short: ASAN 
+      long: Instrument with Address Sanitizer
+      settings:
+        ASAN: ON 
+        TSAN: OFF
+    tsan:
+      short: TSAN 
+      long: Instrument with Thread Sanitizer
+      settings:
+        ASAN: OFF
+        TSAN: ON 
+
+tests:
+  default: off 
+  choices:
+    off:
+      short: TestsOff
+      long: Unit tests disabled
+      settings:
+        UNIT_TESTS: OFF
+    on:
+      short: TestsOn 
+      long: Unit tests enabled 
+      settings:
+        UNIT_TESTS: ON
