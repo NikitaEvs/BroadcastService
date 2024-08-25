@@ -7,6 +7,7 @@
 #include <ios>
 #include <thread>
 
+#include "application.hpp"
 #include "concurrency/combine.hpp"
 #include "concurrency/spinlock.hpp"
 #include "io/timer_service.hpp"
@@ -39,9 +40,9 @@ struct PerfectLinksMessage {
   }
 };
 
-class PerfectLinks {
+class PerfectLinks : public IApplication {
 public:
-  using SignalHandler = std::function<void(int)>;
+  using SignalHandler = IApplication::SignalHandler;
   using DurationMs = TimerService::DurationMs;
 
   explicit PerfectLinks(Parser &parser)
@@ -56,12 +57,12 @@ public:
     }
   }
 
-  void Start() {
+  void Start() final {
     output_.open(output_path_, std::ios::in | std::ios::out | std::ios::trunc);
     runtime_->Start();
   }
 
-  void Run() {
+  void Run() final {
     if (run_config_.receiver_process == local_id_) {
       RunAsReceiver();
     } else {
@@ -69,19 +70,19 @@ public:
     }
   }
 
-  void Stop() {
+  void Stop() final {
     output_.flush();
     output_.close();
     runtime_->Stop();
   }
 
-  void Shutdown() {
+  void Shutdown() final {
     output_.flush();
     output_.close();
     runtime_->Shutdown();
   }
 
-  SignalHandler GetSignalHandler() {
+  SignalHandler GetSignalHandler() final {
     return [this](int) { Shutdown(); };
   }
 
@@ -208,7 +209,7 @@ private:
       application_message.Unmarshal(std::move(message));
 
       for (size_t payload_idx = 0; payload_idx < 8; ++payload_idx) {
-        output_ << 'd' << ' ' << src << ' '
+        output_ << 'd' << ' ' << static_cast<uint32_t>(src) << ' '
                 << application_message.seqeunce_number[payload_idx] << '\n';
       }
     };

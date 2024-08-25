@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <memory>
 
+#include "applications/application.hpp"
 #include "concurrency/combine.hpp"
 #include "concurrency/spinlock.hpp"
 #include "io/transport/hosts.hpp"
@@ -32,9 +33,9 @@ struct FIFOMessage {
   }
 };
 
-class FIFO {
+class FIFO : public IApplication {
 public:
-  using SignalHandler = std::function<void(int)>;
+  using SignalHandler = IApplication::SignalHandler;
 
   explicit FIFO(Parser &parser)
       : local_id_(static_cast<PeerID>(parser.id())),
@@ -44,26 +45,26 @@ public:
     runtime_ = std::make_unique<Runtime>(GetRuntimeConfig());
   }
 
-  void Start() {
+  void Start() final {
     output_.open(output_path_, std::ios::in | std::ios::out | std::ios::trunc);
     runtime_->Start();
   }
 
-  void Run() { RunAsBroadcaster(); }
+  void Run() final { RunAsBroadcaster(); }
 
-  void Stop() {
+  void Stop() final {
     output_.flush();
     output_.close();
     runtime_->Stop();
   }
 
-  void Shutdown() {
+  void Shutdown() final {
     output_.flush();
     output_.close();
     runtime_->Shutdown();
   }
 
-  SignalHandler GetSignalHandler() {
+  SignalHandler GetSignalHandler() final {
     return [this](int) { Shutdown(); };
   }
 
