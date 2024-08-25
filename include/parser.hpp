@@ -130,6 +130,11 @@ public:
     return configPath_.c_str();
   }
 
+  std::string_view mode() const {
+    checkParsed();
+    return std::string_view(mode_);
+  }
+
   std::vector<Host> hosts() {
     std::ifstream hostsFile(hostsPath());
     std::vector<Host> hosts;
@@ -206,6 +211,10 @@ private:
       return false;
     }
 
+    if (!parseMode()) {
+      return false;
+    }
+
     return true;
   }
 
@@ -217,7 +226,7 @@ private:
     if (!withConfig) {
       std::cerr << "\n";
     } else {
-      std::cerr << " CONFIG\n";
+      std::cerr << " CONFIG MODE\n";
     }
 
     exit(EXIT_FAILURE);
@@ -284,6 +293,15 @@ private:
     return true;
   }
 
+  bool parseMode() {
+    if (argc < 9) {
+      return false;
+    }
+
+    mode_ = std::string(argv[8]);
+    return true;
+  }
+
   bool isPositiveNumber(const std::string &s) const {
     return !s.empty() && std::find_if(s.begin(), s.end(), [](unsigned char c) {
                            return !std::isdigit(c);
@@ -324,4 +342,5 @@ private:
   std::string hostsPath_;
   std::string outputPath_;
   std::string configPath_;
+  std::string mode_;
 };

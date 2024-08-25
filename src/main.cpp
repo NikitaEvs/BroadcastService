@@ -3,6 +3,7 @@
 #include <signal.h>
 #include <thread>
 
+#include "applications/application.hpp"
 #include "applications/fifo.hpp"
 #include "applications/lattice_agreement.hpp"
 #include "applications/perfect_links.hpp"
@@ -71,14 +72,25 @@ int main(int argc, char **argv) {
 
   std::cout << "Broadcasting and delivering messages...\n\n";
 
-  // PerfectLinks application(parser);
-  // FIFO application(parser);
-  LatticeAgreementApplication application(parser);
-  signal_handler = application.GetSignalHandler();
+  const auto mode = parser.mode();
 
-  application.Start();
-  application.Run();
-  application.Stop();
+  std::unique_ptr<IApplication> application;
+  if (mode == "PERFECT_LINKS") {
+    application = std::make_unique<PerfectLinks>(parser);
+  } else if (mode == "FIFO") {
+    application = std::make_unique<FIFO>(parser);
+  } else if (mode == "LATTICE") {
+    application = std::make_unique<LatticeAgreementApplication>(parser);
+  } else {
+    std::cout << "Invalid working mode. Possible options: PERFECT_LINKS, FIFO, "
+                 "LATTICE.";
+    return 0;
+  }
+  signal_handler = application->GetSignalHandler();
+
+  application->Start();
+  application->Run();
+  application->Stop();
 
   // After a process finishes broadcasting,
   // it waits forever for the delivery of messages.
