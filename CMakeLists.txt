@@ -28,20 +28,20 @@ string(CONCAT CMAKE_CXX_FLAGS_COMMON_STR ""
                         "-Wredundant-decls -Wstrict-overflow=5 -Wundef "
                         "-Wno-unused -Wctor-dtor-privacy -Wsign-promo "
                         "-Woverloaded-virtual -Wold-style-cast")
-if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    string(CONCAT CMAKE_CXX_FLAGS_STR "${CMAKE_CXX_FLAGS_COMMON_STR} "
-                        "-Wlogical-op -Wstrict-null-sentinel -Wnoexcept")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS_STR}")
-elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    if (ASAN)
-        string(CONCAT CMAKE_CXX_FLAGS_STR "${CMAKE_CXX_FLAGS_COMMON_STR} " "-fsanitize=address,undefined -fno-sanitize-recover=all")
-    elseif (TSAN)
-        string(CONCAT CMAKE_CXX_FLAGS_STR "${CMAKE_CXX_FLAGS_COMMON_STR} " "-fsanitize=thread -fno-sanitize-recover=all")
-    else()
-        string(CONCAT CMAKE_CXX_FLAGS_STR "${CMAKE_CXX_FLAGS_COMMON_STR} " "-gdwarf-4")
-    endif()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS_STR}")
+if (ASAN)
+    message("Compile with ASAN")
+    set(CMAKE_CXX_FLAGS_COMMON_STR "${CMAKE_CXX_FLAGS_COMMON_STR} -fsanitize=address,undefined -fno-sanitize-recover=all")
+elseif (TSAN)
+    message("Compile with TSAN")
+    set(CMAKE_CXX_FLAGS_COMMON_STR "${CMAKE_CXX_FLAGS_COMMON_STR} -fsanitize=thread -fno-sanitize-recover=all")
+else()
+    set(CMAKE_CXX_FLAGS_COMMON_STR "${CMAKE_CXX_FLAGS_COMMON_STR} -gdwarf-4")
 endif()
+
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    set(CMAKE_CXX_FLAGS_COMMON_STR "${CMAKE_CXX_FLAGS_COMMON_STR} -Wlogical-op -Wstrict-null-sentinel -Wnoexcept")
+endif()
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS_COMMON_STR}")
 
 set(CMAKE_CXX_FLAGS_MINSIZEREL "-Os -DNDEBUG")
 
