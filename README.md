@@ -137,3 +137,27 @@ The message exchange component is the most performance-critical. It's implemente
 
 The architecture of the message exchange service is on the following picture:
 ![Message exchange design](./.github/media/message_exchange_design.svg)
+
+The whole design consists of 5 layers:
+- `ReliableTransport` allows to send a message with eventual delivery guarantees and wait for the delivery on the `Future` (or combine it with functional combinators).
+- `ReliableChannel` encapsulates retry logic, delivery contract logic and handling different internal types of messages (acknowledgement type, payload type).
+- `FairLossChannel` provides a middle layer between high-level logic and operating system level (UDP socket, epoll). It controls the rate of sending UDP packets and registers async read/write events in the event loop. 
+- `EventLoop` handles events execution via epoll.
+
+The whole sending message flow consists of the following steps:
+
+1. User sends a `message` to `destination_id` of the peer via `ReliableTransport` and gets a `Future` of contract of the delivery event.
+1. `ReliableTransport` routes the `message` to the corresponding `ReliableChannel` with `destination_id`.
+1. `ReliableChannel` starts a retry timer in the `TimerService` and registers a new contract in the `PromiseStorage`. It wraps the message into a packet and send it via `FairLossChannel`. Then it returns the corresponding `Future` to the caller.
+1. `FairLossChannel` pushes the packet into `Batched Lock-Free Queue` that limits the speed of sending packets and batches requests together. `FairLossChannel` also registers `WriteEvent` and `ReadEvent` of the corresponding socket in the `EventLoop`, so that it will send packets in a non-blocking way. 
+1. Every connected peer has a connected UDP socket over the unconnected one. This technique allows to save on address lookup for every requests after the first one. 
+1. When the peer's socket is ready, some amount of requests are taken from the `Batched Queue` and sent to the UDP socket until it will be blocked. Unsent requests are put into the queue again. 
+
+Receiving message flow has the following steps:
+1. `FairLossChannel` registers `ReadEvent` on the peer's socket.
+1. When the socket is ready, the packet is fetched from it and the `FairLossChannel` delivery callback is called.
+1. In the callback, the packet's header is deserialized and the `PacketMatcher` routes the packet to the corresponding callback.
+1. If the packet contains user's data, the acknowledgment message is sent using `FairLossChannel` (note that this message won't be retried in the case of loss) and the `ReliablaChannel` delivery callback is called.
+1. If the packet is an acknowledgement on the another message, the contract in the `PromiseStorage` is fulfilled and the corresponding retry in the `TimerService` is cancelled.
+1. On receiving the message, `ReliableChannel` routes it back with the sender id. Since we are using the connected UDP socket technique, the sender will be known by the kernel demultiplexing to the right socket.
+1. On receiving the message, `ReliableTransport` puts the message callback execution into the `PacketBatcher`. It is an asynchronous mutex that serializes callbacks and executes them in batches on some worker in the `ThreadPool`. It allows us not to use any synchronization in the callbacks and move computation to data but not data to computation.
