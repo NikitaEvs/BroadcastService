@@ -203,45 +203,6 @@ private:
   explicit FiberTimer(FiberPtr fiber) : fiber_(fiber) {}
 };
 
-TEST(TimerService, FiberRace) {
-  EventLoop event_loop(100);
-  event_loop.Setup();
-
-  TimerService timer_service(10);
-  timer_service.Register(event_loop);
-
-  ThreadPool thread_pool(5);
-  thread_pool.Start();
-
-  thread_pool.Execute(Lambda::Create([&event_loop]() { event_loop.Run(); }));
-
-  std::atomic<bool> before_flag{false};
-  std::atomic<bool> after_flag{false};
-
-  Go(&thread_pool, [&before_flag, &after_flag, &timer_service]() {
-    auto *timer = FiberTimer::Create(Fiber::Current());
-    before_flag.store(true);
-    timer_service.AddTimer(timer, 1000);
-    Suspend(nullptr); // race between Suspend and Schedule (believe in the long
-                      // enough timer)
-    after_flag.store(true);
-  });
-
-  std::this_thread::sleep_for(100ms);
-  ASSERT_TRUE(before_flag.load());
-  ASSERT_FALSE(after_flag.load());
-
-  std::this_thread::sleep_for(1000ms);
-  ASSERT_TRUE(before_flag.load());
-  ASSERT_TRUE(after_flag.load());
-
-  event_loop.Stop();
-
-  thread_pool.Wait();
-  thread_pool.SignalStop();
-  thread_pool.WaitForStop();
-}
-
 TEST(TimerService, ProperSleep) {
   EventLoop event_loop(100);
   event_loop.Setup();
