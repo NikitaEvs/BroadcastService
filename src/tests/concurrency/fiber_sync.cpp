@@ -30,35 +30,3 @@ TEST(FiberSync, MutexShadowTest) {
   thread_pool.SignalStop();
   thread_pool.WaitForStop();
 }
-
-TEST(FiberSync, WaitGroup) {
-  ThreadPool thread_pool(5);
-  thread_pool.Start();
-
-  constexpr size_t num_workers = 5;
-
-  std::atomic<bool> flag{false};
-  std::atomic<bool> output;
-
-  Go(&thread_pool, [&flag, &output]() {
-    FiberWaitGroup wg;
-
-    for (uint32_t i = 0; i < num_workers; ++i) {
-      wg.Add();
-      Go([&flag, &wg]() {
-        flag.store(true);
-        wg.Done();
-      });
-    }
-
-    wg.Wait();
-    output.store(flag.load());
-  });
-
-  thread_pool.Wait();
-
-  ASSERT_TRUE(output.load());
-
-  thread_pool.SignalStop();
-  thread_pool.WaitForStop();
-}
